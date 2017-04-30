@@ -1,5 +1,57 @@
 #!/bin/bash
 
+function find_program {
+    if ! hash $1 2>/dev/null; then
+	>&2 echo "[!] $2 ('$1') not found"
+	exit 1
+    fi
+}
+
+find_program "pdftk" "pdftk"
+find_program "convert" "ImageMagick"
+find_program "gs" "Ghostscript"
+find_program "tesseract" "Tesseract"
+
+while getopts ":sct:a:" opt; do
+    case $opt in
+	s)
+	    spell=true
+	    ;;
+	c)
+	    concat=true
+	    ;;
+	t)
+	    tlang=$OPTARG
+	    ;;
+	a)
+	    spell=true
+	    alang=$OPTARG
+	    ;;
+	\?)
+	    >&2 echo "[!] invalid option: '-$OPTARG'"
+	    exit 1
+	    ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+if [[ "${spell}" = true ]]; then
+    find_program "aspell" "Aspell"
+fi
+
+if [[ $# -ne 1 ]]; then
+    >&2 echo "[!] wrong number of files (got $#)"
+    exit 1
+fi
+
+if [[ ! -e $1 ]]; then
+    >&2 echo "[!] PDF file not found: '$1'"
+    exit 1
+fi
+
+set -e
+
 fdir=$(basename "$1" .pdf)
 mkdir -p "${fdir}"
 
@@ -25,3 +77,9 @@ done
 echo "[*] cleaning"
 rm pg_*.png
 rm pg_*.pdf
+
+if [[ "${concat}" = true ]]; then
+    echo "[*] concatenating pages into '${fdir}/${fdir}.txt'"
+    cat pg_*.txt > "${fdir}.txt"
+    rm pg_*.txt
+fi
