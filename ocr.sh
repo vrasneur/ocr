@@ -60,6 +60,7 @@ cd "${fdir}"
 echo "[*] splitting PDF"
 pdftk ../"$1" burst
 rm -f doc_data.txt
+printf "[*] found %s page(s)\n" $(ls pg_*.pdf 2>/dev/null | wc -l)
 for i in pg_*.pdf; do
     pref=$(basename ${i} .pdf)
     echo "[*] convert ${pref}"
