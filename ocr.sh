@@ -53,6 +53,7 @@ fi
 set -e
 
 fdir=$(basename "$1" .pdf)
+fdir=$(basename "${fdir}" .PDF)
 mkdir -p "${fdir}"
 
 cd "${fdir}"
